@@ -82,20 +82,6 @@ class edt:
         edt = pygame.image.load("tmp.png")
         edt = pygame.transform.smoothscale(edt, screenSize)
 
-        """
-        w,h = edt.get_size()
-        ratioW = float(w)/screenSize[0]
-        ratioH = 227.0/screenSize[1]
-        print "ratioW : %s"%ratioW
-        print "ratioH : {0} / {1} = {2}".format(227, screenSize[1], ratioH)
-
-        size = width, height = int(w/ratioW), 1000
-        print "size : %s"%[str(i) for i in size]
-        #image de base => 19
-        x = 19*ratioH + (235*ratioH * self.day)
-        displayZone = pygame.Rect(60*0.8, x, 1500*0.8, 250*ratioH)
-        """
-
         screen = pygame.display.set_mode(screenSize, pygame.NOFRAME)
 
         #screen.blit(edt, (0,0), displayZone)
@@ -176,7 +162,7 @@ class edt:
 
     def getPDF(self, date):
         date = self.getWeekFirstDay(date)
-        url = "http://www.iutc3.unicaen.fr/c3/DépartementInformatique/OrganisationEtEmploisDuTemps20162017?action=AttachFile&do=get&target=edtInfo2A{0}{1}{2}.pdf".format(date.year, date.month, date.day)
+        url = "http://www.iutc3.unicaen.fr/c3/DépartementInformatique/OrganisationEtEmploisDuTemps20162017?action=AttachFile&do=get&target=edtInfo{0}{1}{2}{3}.pdf".format(self.config["annee"],date.year, date.month, date.day)
         try:
             req = requests.get(url)
             self.savePDF(req.content)
