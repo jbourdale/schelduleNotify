@@ -1,6 +1,6 @@
 # Schedule Notify
 
-Python script that popup my school day's schedule on a simple command
+Python script that pops up my school day's schedule on a simple command
 
 # Dependancies
 
@@ -8,8 +8,13 @@ Python script that popup my school day's schedule on a simple command
   - pip
   
 # Installation
-
-  Run "sudo python setup.py"
+  
+  To install scheduleNotify, please copy this repository where you want to store the script (e.g : ~/.edtNotify/)
+  
+  Then run
+  
+    sudo apt-get install python-pip
+    sudo python setup.py
 
   This will install for you missing module. 
   
@@ -17,7 +22,7 @@ Python script that popup my school day's schedule on a simple command
 
 # Running
  
- Type /usr/sbin/edt or just run edt in a command-line prompt
+ Type /usr/bin/edt or just run edt in a command-line prompt
  
 # Up comming
 
