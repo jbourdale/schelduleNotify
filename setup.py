@@ -28,6 +28,7 @@ resolution = ",".join([str(pygame.display.Info().current_w),str(pygame.display.I
 print "Detected screen resolution : %s"%resolution
 
 content = json.dumps({
+    'path' : os.getcwd(),
     'annee' : annee,
     'resolution' : resolution,
 })
@@ -35,7 +36,33 @@ content = json.dumps({
 try:
     with open("config.py", "w+") as config:
         config.write(content)
+        os.system("chmod a+w config.py")
         config.close()
 except:
     print "Can't open config.py. Exiting"
     exit()
+
+print "Creating /usr/bin/edt script"
+pwd = os.getcwd()
+script = "#!/bin/bash\npython "+pwd+"/main.py "+pwd+"/"
+try:
+    with open("/usr/bin/edt", "w+") as launcher:
+        os.system("chmod +x /usr/bin/edt")
+        launcher.write(script)
+        launcher.close()
+except Exception, e:
+    print "Error (%s). Can't right at /usr/bin/. Check if you run setup.py with root privilege."%e
+
+
+
+
+
+
+
+
+
+
+
+
+
+#os.system("ln -s /usr/sbin/edt")
