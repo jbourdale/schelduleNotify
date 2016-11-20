@@ -32,6 +32,10 @@ content = json.dumps({
     'resolution' : resolution,
 })
 
-config = open("config.py", "w+")
-config.write(content)
-config.close()
+try:
+    with open("config.py", "w+") as config:
+        config.write(content)
+        config.close()
+except:
+    print "Can't open config.py. Exiting"
+    exit()
