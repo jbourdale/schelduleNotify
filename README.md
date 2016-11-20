@@ -1,6 +1,6 @@
 # Schedule Notify
 
-Python script that popup my school day's schedule on a simple command
+Python script that pops up my school day's schedule on a simple command
 
 # Dependancies
 
@@ -9,7 +9,7 @@ Python script that popup my school day's schedule on a simple command
   
 # Installation
   
-  To install scheduleNotify, please copy this repository where you want store the script (e.g : ~/.edtNotify/)
+  To install scheduleNotify, please copy this repository where you want to store the script (e.g : ~/.edtNotify/)
   
   Then run
   
