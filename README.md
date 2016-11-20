@@ -9,8 +9,9 @@ Python script that popup my school day's schedule on a simple command
   
 # Installation
   
-  To install scheduleNotify, run
+  To install scheduleNotify, please copy this repository where you want store the script (e.g : ~/.edtNotify/)
   
+  Then run
     sudo apt-get install python-pip
     sudo python setup.py
 
