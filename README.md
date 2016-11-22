@@ -5,7 +5,7 @@ Python script that pops up my school day's schedule on a simple command
 # Dependancies
 
   - Python 2.7
-  - pip
+  - pip up to date
   
 # Installation
   
