@@ -52,17 +52,3 @@ try:
         launcher.close()
 except Exception, e:
     print "Error (%s). Can't right at /usr/bin/. Check if you run setup.py with root privilege."%e
-
-
-
-
-
-
-
-
-
-
-
-
-
-#os.system("ln -s /usr/sbin/edt")

@@ -72,6 +72,7 @@ class edt:
             print "Png not found. Generating..."
             self.pdfToPng()
 
+
         resolution = [int(i) for i in self.config["resolution"].split(",")]
         screenSize = int(resolution[0]*0.8), int(resolution[1]*0.2)
         windowPos = int((resolution[0]-screenSize[0])/2),int((resolution[1]-screenSize[1])*0.05)
@@ -80,29 +81,38 @@ class edt:
         os.environ['SDL_VIDEO_WINDOW_POS'] = ",".join([str(i) for i in windowPos])
         pygame.init()
 
+        pygame.event.set_blocked(pygame.MOUSEMOTION)
+        pygame.event.set_blocked(pygame.ACTIVEEVENT)
+
         edt = pygame.image.load(self.path+"tmp.png")
+        initImgSize = edt.get_width(), edt.get_height()
         edt = pygame.transform.smoothscale(edt, screenSize)
+        imgSize = edt.get_width(), edt.get_height()
 
         screen = pygame.display.set_mode(screenSize, pygame.NOFRAME)
-
-        #screen.blit(edt, (0,0), displayZone)
         screen.blit(edt, (0,0))
+
+        minutes = self.date.hour * 60 + self.date.minute
+        if minutes > 480 and minutes < 1080:
+            x = 188 + (118.0/60.0 * (minutes-480))
+            x /= float(initImgSize[0])/imgSize[0]
+            pygame.draw.line(screen, (255,0,0), (x,0),(x,edt.get_height()), 2)
+
         pygame.display.flip()
         run = True
         while run:
-            for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
-                    pygame.quit()
-                    run = False
-                    os.system("rm "+self.path+"tmp.png")
+            event = pygame.event.wait()
+            if event.type == pygame.KEYDOWN:
+                pygame.quit()
+                run = False
+                os.system("rm "+self.path+"tmp.png")
 
     def getWeekFirstDay(self, date):
         weekList = calendar.Calendar().monthdatescalendar(date.year, date.month)
         for week in weekList:
-            if week[0].month == date.month and week[0].day > date.day:
+            if week[0].month == date.month and week[0].day > date.day - 7:
                 return week[0]
-                break
-        return week[len(weekList)-1]
+        return weekList[-1][0]
 
     def getConfig(self):
         try:
@@ -124,6 +134,7 @@ class edt:
             if config["year"] != day.year or config["month"] != day.month or config["day"] != day.day:
                 print "Saved pdf is outdated. Downloading newest..."
                 self.getPDF(self.date)
+                self.display()
             else:
                 print "Saved pdf is up to date. Display..."
                 self.display()
@@ -131,6 +142,7 @@ class edt:
         except Exception, e:
             print "File config.py empty, Downloading new pdf..."
             self.getPDF(self.date)
+            self.display()
 
     def saveConfig(self, date):
         try:
@@ -167,6 +179,7 @@ class edt:
         print self.config
         date = self.getWeekFirstDay(date)
         url = "http://www.iutc3.unicaen.fr/c3/DépartementInformatique/OrganisationEtEmploisDuTemps20162017?action=AttachFile&do=get&target=edtInfo{0}{1}{2}{3}.pdf".format(self.config["annee"], date.year, date.month, date.day)
+        print "url : %s"%url
         try:
             req = requests.get(url)
             self.savePDF(req.content)
