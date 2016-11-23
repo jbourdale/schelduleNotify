@@ -85,7 +85,6 @@ class edt:
                 else:
                     self.usage()
             elif opt in ("-d", "--day"):
-                print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Self.day init : %s"%self.day
                 self.opt = True
                 if arg:
                     ok = False
@@ -99,7 +98,6 @@ class edt:
                         try:
                             self.date = datetime(year, month, jour)
                             self.day = (self.day+int(arg))%7
-                            print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Self.day apres : %s"%self.day
                             ok = True
                         except Exception, e:
                             print "Error (%s) "%e
@@ -181,7 +179,6 @@ class edt:
         resolution = [int(i) for i in self.config["resolution"].split(",")]
         screenSize = int(resolution[0]*0.8), int(resolution[1]*0.2)
         windowPos = int((resolution[0]-screenSize[0])/2),int((resolution[1]-screenSize[1])*0.05)
-        print "Self.day = %s"%self.day
         self.createImg(self.day)
 
         os.environ['SDL_VIDEO_WINDOW_POS'] = ",".join([str(i) for i in windowPos])
@@ -214,11 +211,8 @@ class edt:
                 os.system("rm "+self.path+"tmp.png")
 
     def getWeekFirstDay(self, date):
-        print "date in gwfd : %s"%date
         weekList = calendar.Calendar().monthdatescalendar(date.year, date.month)
         for week in weekList:
-            print "week : %s"%week[0]
-            print "date.day : %s"%(date.day-7)
             if week[0].month == date.month and week[0].day > date.day - 7:
                 return week[0]
         return weekList[-1][0]
@@ -257,13 +251,11 @@ class edt:
                 exit()
 
     def parseConfig(self, config):
-        print "########################"
-        print "Self.date = %s"%self.date
-        print "opt : %s"%self.opt
         day = self.getWeekFirstDay(self.date)
         try:
             if self.opt:
-                os.system("rm "+self.path+"+edt.pdf "+self.path+"edt.png")
+                print "Option have been set, reloading configuration.."
+                os.system("rm "+self.path+"edt.pdf "+self.path+"edt.png")
                 self.getPDF(self.date)
                 self.display()
             elif config["year"] != day.year or config["month"] != day.month or config["day"] != day.day or config["annee"]:
@@ -310,14 +302,10 @@ class edt:
         pdf.close()
 
     def getPDF(self, date):
-        print "Date in getPDF : %s"%date
-        print self.config
         date = self.getWeekFirstDay(date)
         url = "http://www.iutc3.unicaen.fr/c3/DépartementInformatique/OrganisationEtEmploisDuTemps20162017?action=AttachFile&do=get&target=edtInfo{0}{1}{2}{3}.pdf".format(self.config["annee"], date.year, date.month, date.day)
-        print "url : %s"%url
         try:
             req = requests.get(url)
-            print "req.content = %s"%req.content[:10]
             if "<!DOCTYPE " in req.content:
                 print "Error, scheldule not online"
                 exit()
