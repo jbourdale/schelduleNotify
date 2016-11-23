@@ -13,7 +13,8 @@ Python script that pops up my school day's schedule on a simple command
   
   Then run
   
-    sudo apt-get install python-pip
+    curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
+    python get-pip.py
     sudo python setup.py
 
   This will install for you missing module. 
