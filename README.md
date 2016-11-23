@@ -29,15 +29,23 @@ Python script that pops up my school day's schedule on a simple command
  edt [options]
 
  Options (facultative): 
+ 
   -h or --help : Display this page
+ 
   -s or --schoolyear : (1A/2A) Schoolyear to display. Will be save in config.py 
+ 
   -d or --day : The day (in relative than today) that the scheldule is query
+ 
   -r or --resolution : Save and display for this resolution.
 
  Exemples : 
+ 
   edt
+ 
     This will display the edt with saved config
+  
   edt -s 1A -d 1 -r 1920,1080
+  
     This will display the 1A's scheldule for tomorrow in a resolution of 1920,1080
  
 # Up comming
