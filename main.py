@@ -9,7 +9,8 @@
 try:
     from datetime import datetime
     from PIL import Image
-    import calendar, requests, json, pygame, os, sys
+    from time import sleep
+    import calendar, requests, json, pygame, os, sys, getopt
 except:
     print "Dependencies error. Please read README, installation notes."
     exit()
@@ -17,18 +18,120 @@ except:
 
 class edt:
 
-    def __init__(self, path):
-        self.path = path
-        print path
+    def __init__(self, args):
+        self.opt = False
         self.date = datetime.now()
         self.day = calendar.weekday(self.date.year, self.date.month, self.date.day)
         if self.day < 5:
+            self.args = args
             self.pdf = None
+            self.path = args[2]
             self.config = self.getConfig()
+            self.parseOpt(args[1:])
+
             self.checkFiles()
             self.parseConfig(self.config)
         else:
             print "There is no schedule today."
+
+    def usage(self):
+        print "============= Schedule Notify ==============\n"
+        print "Usage : edt [options]"
+        print "\nOptions (facultative): "
+        print "\t-h or --help : Display this page"
+        print "\t-s or --schoolyear : (1A/2A) Schoolyear to display. Will be save in config.py "
+        print "\t-d or --day : The day (in relative than today) that the scheldule is query"
+        print "\t-r or --resolution : Save and display for this resolution."
+        print "\nExemples : "
+        print "\tedt"
+        print "\t\tThis will display the edt with saved config"
+        print "\tedt -s 1A -d 1 -r 1920,1080"
+        print "\t\tThis will display the 1A's scheldule for tomorrow in a resolution of 1920,1080\n\n"
+        exit()
+
+
+    def parseOpt(self, argv):
+
+        try:
+            options, remainder = getopt.getopt(argv, "p:s:d:r:h", [
+                "path=",
+                "schoolyear=",
+                "day=",
+                "resolution=",
+                "help",
+            ])
+        except Exception, e:
+            print "Error (%s)"%e
+            self.usage()
+
+        #print "OPTIONS : %s"%options
+        #print "REMAINDER : %s"%remainder
+
+        if remainder:
+            self.usage()
+        for opt, arg in options:
+            if opt in ("-p", "--path"):
+                if arg:
+                    self.path = arg
+                else:
+                    self.usage()
+            elif opt in ("-s", "--schoolyear"):
+                self.opt = True
+                if arg:
+                    if arg == "1A" or arg == "2A":
+                        self.config["annee"] = arg
+                    else:
+                        self.usage()
+                else:
+                    self.usage()
+            elif opt in ("-d", "--day"):
+                print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Self.day init : %s"%self.day
+                self.opt = True
+                if arg:
+                    ok = False
+                    year = self.date.year
+                    month = self.date.month
+                    try:
+                        jour = self.date.day + int(arg)
+                    except:
+                        self.usage()
+                    while(not ok):
+                        try:
+                            self.date = datetime(year, month, jour)
+                            self.day = (self.day+int(arg))%7
+                            print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Self.day apres : %s"%self.day
+                            ok = True
+                        except Exception, e:
+                            print "Error (%s) "%e
+                            month +=1
+                            if month > 12:
+                                year += 1
+                                month -= 12
+                            jour -= int(calendar.monthrange(year, month)[1])
+                else:
+                    self.usage()
+
+                if self.day >= 5:
+                    print "There is no schedule today."
+                    exit()
+            elif opt in ("-r", "--resolution"):
+                self.opt = True
+                if arg:
+                    try:
+                        w,h = arg.split(",")
+                        w = int(w)
+                        h = int(h)
+                        if w > 800 and h > 600:
+                            self.config["resolution"] = ",".join([str(w),str(h)])
+                        else:
+                            raise Exception("Resolution not valid")
+                    except Exception, e:
+                        print "Error(%s)"%e
+                        self.usage()
+                else:
+                    self.usage()
+            elif opt in ("-h", "--help"):
+                self.usage()
 
     def checkFiles(self):
 
@@ -38,12 +141,14 @@ class edt:
         except:
             print "Error. Try to create manualy config.py in root directory"
             exit()
+
         try:
             edt = open(self.path+"edt.pdf", "r")
             edt.close()
         except:
             print "PDF not found. Downloading.."
             self.getPDF(self.date)
+
 
     def createImg(self,weekday):
         try:
@@ -76,6 +181,7 @@ class edt:
         resolution = [int(i) for i in self.config["resolution"].split(",")]
         screenSize = int(resolution[0]*0.8), int(resolution[1]*0.2)
         windowPos = int((resolution[0]-screenSize[0])/2),int((resolution[1]-screenSize[1])*0.05)
+        print "Self.day = %s"%self.day
         self.createImg(self.day)
 
         os.environ['SDL_VIDEO_WINDOW_POS'] = ",".join([str(i) for i in windowPos])
@@ -108,8 +214,11 @@ class edt:
                 os.system("rm "+self.path+"tmp.png")
 
     def getWeekFirstDay(self, date):
+        print "date in gwfd : %s"%date
         weekList = calendar.Calendar().monthdatescalendar(date.year, date.month)
         for week in weekList:
+            print "week : %s"%week[0]
+            print "date.day : %s"%(date.day-7)
             if week[0].month == date.month and week[0].day > date.day - 7:
                 return week[0]
         return weekList[-1][0]
@@ -117,28 +226,53 @@ class edt:
     def getConfig(self):
         try:
             config = open(self.path+"config.py", "r")
-            return json.load(config)
+            js = json.load(config)
             config.close()
+            return js
         except Exception, e:
             try:
+                pygame.init()
+                content = json.dumps({
+                    'year' : self.date.year,
+                    'month' : self.date.month,
+                    'day' : str(self.getWeekFirstDay(self.date).day),
+                    'annee' : '2A',
+                    'resolution' : ",".join([str(pygame.display.Info().current_w),str(pygame.display.Info().current_h)]),
+                    'path' : os.getcwd()
+                })
+                pygame.quit()
+
                 config = open(self.path+"config.py", "w+")
+                config.write(content)
                 config.close()
-                return None
-            except:
-                print "Error. Couldn't open config.py file"
+                sleep(1)
+
+                config = open(self.path+"config.py", "r")
+                js = json.load(config)
+                config.close()
+                return js
+
+            except Exception, e:
+                print "Error( %s ). Couldn't open config.py file"%e
                 exit()
 
     def parseConfig(self, config):
+        print "########################"
+        print "Self.date = %s"%self.date
+        print "opt : %s"%self.opt
         day = self.getWeekFirstDay(self.date)
         try:
-            if config["year"] != day.year or config["month"] != day.month or config["day"] != day.day:
+            if self.opt:
+                os.system("rm "+self.path+"+edt.pdf "+self.path+"edt.png")
+                self.getPDF(self.date)
+                self.display()
+            elif config["year"] != day.year or config["month"] != day.month or config["day"] != day.day or config["annee"]:
                 print "Saved pdf is outdated. Downloading newest..."
                 self.getPDF(self.date)
                 self.display()
             else:
                 print "Saved pdf is up to date. Display..."
                 self.display()
-
         except Exception, e:
             print "File config.py empty, Downloading new pdf..."
             self.getPDF(self.date)
@@ -164,7 +298,7 @@ class edt:
                 'resolution' : ",".join([str(pygame.display.Info().current_w),str(pygame.display.Info().current_h)]),
                 'path' : '/opt/edt/'
             })
-
+            pygame.quit()
         config = open(self.path+"config.py", "w+")
         config.write(content)
         config.close()
@@ -176,12 +310,17 @@ class edt:
         pdf.close()
 
     def getPDF(self, date):
+        print "Date in getPDF : %s"%date
         print self.config
         date = self.getWeekFirstDay(date)
         url = "http://www.iutc3.unicaen.fr/c3/DépartementInformatique/OrganisationEtEmploisDuTemps20162017?action=AttachFile&do=get&target=edtInfo{0}{1}{2}{3}.pdf".format(self.config["annee"], date.year, date.month, date.day)
         print "url : %s"%url
         try:
             req = requests.get(url)
+            print "req.content = %s"%req.content[:10]
+            if "<!DOCTYPE " in req.content:
+                print "Error, scheldule not online"
+                exit()
             self.savePDF(req.content)
             self.saveConfig(date)
         except Exception, e:
@@ -190,4 +329,4 @@ class edt:
 
 
 if __name__ == "__main__":
-    edt = edt(sys.argv[1])
+    edt = edt(sys.argv)

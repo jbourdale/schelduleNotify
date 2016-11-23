@@ -44,7 +44,14 @@ except:
 
 print "Creating /usr/bin/edt script"
 pwd = os.getcwd()
-script = "#!/bin/bash\npython "+pwd+"/main.py "+pwd+"/"
+script = "#!/bin/bash\npython "+pwd+"/main.py -p "+pwd+"/ $*"
+
+"""
+#!/bin/bash
+$call = "python "+pwd+"/main.py -p "+pwd+"/ $*"
+$call
+"""
+
 try:
     with open("/usr/bin/edt", "w+") as launcher:
         os.system("chmod +x /usr/bin/edt")
